@@ -127,27 +127,40 @@ vec4 tulipShape(vec2 p) {
       float lu = (xn - ci) / (ci == 0.0 ? 0.38 : 0.31);
       float top = (ci == 0.0 ? 1.0 : 0.95) - 0.07 * abs(lu);     // softly pointed tips
       if (t < top) {
-        vec3 c = vColor * (0.7 + 0.35 * t);                       // powder blue, a bit deeper low down
-        c *= 0.72 + 0.34 * (1.0 - lu * lu);                       // rounded, soft shading
-        c *= ci == 0.0 ? 1.06 : 0.9;                              // front petal sits on top
+        // Base tone: cool indigo at the calyx, powder blue body, paler tips
+        vec3 c = vColor * (0.64 + 0.42 * t);
+        c = mix(c, c * vec3(0.8, 0.82, 1.0), (1.0 - smoothstep(0.0, 0.35, t)) * 0.6);
+        c *= 0.74 + 0.32 * (1.0 - lu * lu);                       // rounded, soft shading
+        if (ci == 0.0) {
+          c *= 1.06;                                              // front petal sits on top
+        } else {
+          c *= 0.9;
+          float tuck = smoothstep(0.0, 1.0, -sign(ci) * lu);      // side petal slips under the front one
+          c *= 1.0 - 0.2 * tuck * tuck;                           // soft contact shadow = depth
+        }
         float seam = smoothstep(0.8, 1.0, abs(lu));
-        c *= mix(vec3(1.0), vec3(0.72, 0.78, 0.95), seam);        // creases lean violet-blue
-        c *= 1.0 + 0.03 * sin(lu * 14.0 + vSeed.x * 6.0);         // fine petal lines
+        c *= mix(vec3(1.0), vec3(0.74, 0.76, 0.96), seam);        // creases lean violet-blue
+        c *= 1.0 + 0.025 * sin(lu * 16.0 + t * 2.0 + vSeed.x * 6.0); // fine veins following the cup
         float spec = exp(-pow((lu + 0.3) / 0.22, 2.0)) * smoothstep(0.15, 0.6, t) * (1.0 - smoothstep(0.8, 1.0, t));
         c += vec3(0.28, 0.34, 0.45) * spec * 0.55;                // soft satin sheen
+        // Moonlight through the thin petal edges and tips (backlit translucency)
+        float rim = smoothstep(0.84, 1.0, abs(xn)) + 0.8 * smoothstep(top - 0.12, top, t);
+        c += vec3(0.3, 0.4, 0.62) * min(rim, 1.0) * 0.3;
 
-        // Dew drops: tiny lenses with a bright catch-light
+        // Dew drops: fewer, calmer lenses whose catch-light twinkles slowly
         vec2 gc = gl_PointCoord * 26.0;
         vec2 cell = floor(gc);
         vec2 f = fract(gc) - 0.5;
-        if (hash(cell + vSeed * 7.0) > 0.72) {
+        float hc = hash(cell + vSeed * 7.0);
+        if (hc > 0.8) {
           vec2 off = (vec2(hash(cell + 3.1), hash(cell + 7.7)) - 0.5) * 0.4;
           float rad = 0.12 + 0.14 * hash(cell + 1.3);
           float d = length(f - off);
           if (d < rad) {
             c = mix(c, c * 1.15 + 0.06, 0.8);
             c = mix(c, c * 0.85, smoothstep(rad * 0.7, rad, d));   // darker drop edge
-            if (length(f - off - vec2(-rad * 0.35, rad * 0.35)) < rad * 0.28) c = vec3(0.95, 0.97, 1.0);
+            float tw = 0.55 + 0.45 * sin(uTime * 1.2 + hc * 40.0);
+            if (length(f - off - vec2(-rad * 0.35, rad * 0.35)) < rad * 0.28) c = mix(c, vec3(0.95, 0.97, 1.0), tw);
           }
         }
         return vec4(c, 1.0);

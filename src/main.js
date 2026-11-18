@@ -20,7 +20,7 @@ function hasWebGL() {
 }
 
 /* ---------- The song ("Loose" file in the public folder) ---------- */
-const song = new Audio("/loose.mp3");
+const song = new Audio(import.meta.env.BASE_URL + "loose.mp3"); // works on GitHub Pages sub-paths too
 song.loop = true;
 song.preload = "auto";
 song.volume = 0;

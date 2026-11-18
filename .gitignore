@@ -2,9 +2,6 @@
 node_modules/
 dist/
 
-# The song is not shared publicly. Put your own copy at public/loose.mp3 to hear it.
-*.mp3
-
 # Local backups of earlier versions
 backup-*/
 
