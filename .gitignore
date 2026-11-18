@@ -1,0 +1,16 @@
+# Dependencies and build output (recreate with: npm install / npm run build)
+node_modules/
+dist/
+
+# The song is not shared publicly. Put your own copy at public/loose.mp3 to hear it.
+*.mp3
+
+# Local backups of earlier versions
+backup-*/
+
+# Editor / OS / local tool files
+.DS_Store
+Thumbs.db
+.vscode/
+.claude/
+*.log
